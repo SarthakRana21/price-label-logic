@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 export default function PriceLabel() {
-  const [value, setValue] = useState();
+  const [value, setValue] = useState("");
   const [good, setGood] = useState(false);
   const [high, setHigh] = useState(false);
-  const [VeryHigh, setVeryHigh] = useState(false);
+  const [veryHigh, setVeryHigh] = useState(false);
   const [great, setGreat] = useState(false);
   const [best, setBest] = useState(false);
 
@@ -17,14 +17,24 @@ export default function PriceLabel() {
     setBest(false);
   };
 
+  // thousand comma pattern regex logic
+  const formatNumber = (value) => {
+    const numericValue = value.replace(/[^0-9]/g, '');
+    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
   const handleOnchange = (e) => {
-    setValue(e.target.value);
+    let rawValue = e.target.value;
+    const formattedValue = formatNumber(rawValue);
+    setValue(formattedValue)
+    
+    // setValue(e.target.value);
   };
   const priceLabel = (price) => {
-    const prevPrice = [100, 89, 50, 110, 90, 114, 120];
-    const mean =
-      prevPrice.reduce((acc, curr) => acc + curr, 0) / prevPrice.length;
-    console.log(mean.toFixed(2));
+
+    const prevPrice = [10000, 80009, 50000, 110000, 90000, 114000, 120000];
+    const mean = prevPrice.reduce((acc, curr) => acc + curr, 0) / prevPrice.length;
+    // console.log(mean.toFixed(2));
     const tenP = mean * 0.1;
     const thirtyP = mean * 0.3;
 
@@ -46,8 +56,15 @@ export default function PriceLabel() {
     }
   };
   useEffect(() => {
-    if (value !== "" && value > 0) {
-      priceLabel(value);
+    if (value) {
+      // Converting the string value back to a number, removing the commas (priceLabel fn only takes nums)
+      const num = parseFloat(value.replace(/,/g, ""));
+       // console.log('type: ', typeof num);
+      if (num > 0) {
+        priceLabel(num);
+      } else {
+        allPriceStatusFalse();
+      }
     } else {
       allPriceStatusFalse();
     }
@@ -55,7 +72,7 @@ export default function PriceLabel() {
 
   return (
     <div className="App">
-      <input type="number" value={value} onChange={handleOnchange} min={0} placeholder="Enter your Price" pattern="" required />
+      <input type="text" value={value} onChange={handleOnchange} min={0} placeholder="Enter your Price" required />
       <br />
       { best && <div>
         <img src={'/best-price.png'} alt="Best Price" width={100} height={50} />
@@ -76,7 +93,7 @@ export default function PriceLabel() {
         <br />
         <span>High Price</span>
         </div> }
-      { VeryHigh && <div>
+      { veryHigh && <div>
         <img src={'/very-high-price.png'} alt="Very High Price" width={100} height={50} />
         <br />
         <span>Very High Price</span></div> }
